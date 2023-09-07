@@ -1,7 +1,11 @@
-<h1>{{title}} 글 작성</h1>
+<h1>{{title}} 글 {{#if (eq mode "create")}} 작성 {{else}} 수정 {{/if}}</h1>
 <div>
   {{! 1.글쓰기 폼 }}
-  <form name="boardForm" method="post" action="/write">
+  <form name="boardForm" method="post" {{#if (eq mode "create" )}} action="/write" {{ else }} action="/modify" {{/if}}>
+
+    {{#if (eq mode "modify")}}
+    <input type="hidden" name="id" value="{{post._id}}"/>
+    {{/if}}
 
     {{! 2. 제목 입력 칸 }}
     <div>
@@ -10,7 +14,7 @@
         type="text"
         name="title"
         placeholder="제목을 넣어주세요"
-        value=""
+        value="{{post.title}}"
       />
     </div>
 
@@ -21,7 +25,7 @@
         type="text"
         name="writer"
         placeholder="이름을 넣어주세요"
-        value=""
+        value="{{post.writer}}"
       />
     </div>
 
@@ -44,7 +48,7 @@
         name="content"
         cols="50"
         rows="10"
-      ></textarea>
+      >{{post.content}}</textarea>
       <br />
     </div>
 

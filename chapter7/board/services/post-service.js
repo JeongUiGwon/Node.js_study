@@ -1,10 +1,11 @@
 const paginator = require("../utils/paginator");
+const { ObjectId } = require("mongodb");
 
 // 1. 글쓰기 함수
 async function writePost(collection, post) {
   // 생성일시와 조회수를 넣어줍니다.
   post.hits = 0;
-  post.createDt = new Date().toISOString(); // 2. 날짜는 IOS 포맷으로 저장
+  post.createdDt = new Date().toISOString(); // 2. 날짜는 IOS 포맷으로 저장
   return await collection.insertOne(post); // 3. 몽고디비에 post를 저장 후 결과 반환
 }
 
@@ -27,8 +28,46 @@ async function list(collection, page, search) {
   return [posts, paginatorObj];
 }
 
+const projectionOption = {
+  projection: {
+    password: 0,
+    "comments.password": 0,
+  },
+};
+
+async function getDetailPost(collection, id) {
+  return await collection.findOneAndUpdate(
+    { _id: ObjectId(id) },
+    { $inc: { hits: 1 } },
+    projectionOption
+  );
+}
+
+async function getPostByIdAndPassword(collection, { id, password }) {
+  return await collection.findOne(
+    { _id: ObjectId(id), password: password },
+    projectionOption
+  );
+}
+
+async function getPostById(collection, id) {
+  return await collection.findOne({ _id: ObjectId(id) }, projectionOption);
+}
+
+async function updatePost(collection, id, post) {
+  const toUpdatePost = {
+    $set: {
+      ...post,
+    },
+  };
+  return await collection.updateOne({ _id: ObjectId(id) }, toUpdatePost);
+}
+
 module.exports = {
-  // 4. require()로 파일을 임포트 시 외부로 노출하는 객체
   list,
   writePost,
+  getDetailPost,
+  getPostById,
+  getPostByIdAndPassword,
+  updatePost,
 };
